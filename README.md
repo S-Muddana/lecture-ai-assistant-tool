@@ -3,13 +3,15 @@ UC Berkeley AI Hackathon Project by Satvik Muddana, Aldrin Ong, Subham Mitra, an
 
 # How to run the app
 
-npm install -g npm@10.8.1
+npm install or npm install -g npm@10.8.1
 
 npm install react-router-dom
 
+npm install openai
+
+Add your openai key to the .env file
+
 npm start
-
-
 
 # Getting Started with Create React App
 
