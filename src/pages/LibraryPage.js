@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import supabase from '../supabaseClient';
 
 const LibraryPage = () => {
   const [videos, setVideos] = useState([]);
   const [videoUrl, setVideoUrl] = useState('');
   const [videoTitle, setVideoTitle] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+
+  const uploadToSupabase = async () => {
+    const { data, error } = await supabase
+      .from('lectures')
+      .insert([
+        { url: videoUrl, transcript: 'transcript goes here', title: videoTitle }
+      ]);
+  };
 
   const extractVideoId = (url) => {
     try {
@@ -27,6 +36,7 @@ const LibraryPage = () => {
     if (videoId && videoTitle) {
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
       setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
+      uploadToSupabase();
       setVideoUrl('');
       setVideoTitle('');
     } else {
