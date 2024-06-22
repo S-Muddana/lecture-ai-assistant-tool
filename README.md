@@ -9,6 +9,8 @@ npm install react-router-dom
 
 npm install openai
 
+npm install @supabase/supabase-js
+
 Add your openai key to the .env file
 
 npm start
