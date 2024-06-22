@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import supabase from '../supabaseClient';
+import {fetchTranscript} from '../utils/Transcript';
 
 const LibraryPage = () => {
   const [videos, setVideos] = useState([]);
   const [videoUrl, setVideoUrl] = useState('');
   const [videoTitle, setVideoTitle] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [transcript, setTranscript] = useState('');
 
   const uploadToSupabase = async () => {
     const { data, error } = await supabase
       .from('lectures')
       .insert([
-        { url: videoUrl, transcript: 'transcript goes here', title: videoTitle }
+        { url: videoUrl, transcript: transcript, title: videoTitle }
       ]);
   };
 
@@ -31,8 +33,11 @@ const LibraryPage = () => {
     }
   };
 
-  const handleAddVideo = () => {
+  const handleAddVideo = async () => {
     const videoId = extractVideoId(videoUrl);
+    const curr_transcript = await fetchTranscript(videoId);
+    setTranscript(curr_transcript);
+    console.log(curr_transcript);
     if (videoId && videoTitle) {
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
       setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
