@@ -12,9 +12,15 @@
   "description": "",
   "dependencies": {
     "axios": "^1.7.2",
+    "body-parser": "^1.20.2",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "fs": "^0.0.1-security",
     "nodemon": "^3.1.4",
+    "openai": "^4.52.0",
+    "path": "^0.12.7",
+    "youtube-screenshot": "^1.0.2",
     "youtube-transcript": "^1.2.1"
   }
 }
