@@ -5,6 +5,7 @@ import { fetchTranscript } from '../utils/Transcript';
 import { generateQuizQuestions } from '../utils/QuizGenerator';
 import { uploadToS3, startIngestionJob, queryKnowledgeBase } from '../utils/uploadToS3';
 import '../index.css';
+import axios from 'axios';
 
 const LibraryPage = () => {
   const [videos, setVideos] = useState([]);

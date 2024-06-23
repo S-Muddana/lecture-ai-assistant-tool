@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 import supabase from '../supabaseClient';
 import { useParams } from 'react-router-dom';
 import SpeechRecognitionComponent from '../utils/SpeechRecog';
+import axios from 'axios';
 
 // Configure the OpenAI client
 const openai = new OpenAI({
@@ -10,7 +11,7 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true
 });
 
-const Chatbot = () => {
+const Chatbot = (props) => {
   const { id } = useParams();
   const videoUrl = `https://www.youtube.com/watch?v=${id}`;
   const [messages, setMessages] = useState([{ sender: 'bot', text: 'Hi! How can I help you today?' }]);
@@ -87,8 +88,18 @@ const Chatbot = () => {
     setInterimInput('');
   };
 
+  const handleOcr = async () => {
+    const response = await axios.post('http://localhost:3001/take-screenshot', { timestamp: props.currentTime, url: videoUrl });
+    const dummyMessages = [];
+    for (let i = 0; i < messages.length; i++) {
+      dummyMessages.push(messages[i]);
+    }
+    dummyMessages.push({ sender: 'bot', text: response.data.data });
+    setMessages(dummyMessages);
+  };
+
   return (
-    <div className="rounded-md" style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', padding: '10px', height: '400px', display: 'flex', flexDirection: 'column' }}>
+    <div className="rounded-md h-full" style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', padding: '10px', height: '400px', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px' }}>
         {messages.map((message, index) => (
           <div key={index} style={{ textAlign: message.sender === 'bot' ? 'left' : 'right' }}>
@@ -116,6 +127,9 @@ const Chatbot = () => {
             className="input input-bordered w-5/6" 
           />
           <div className='flex flex-row justify-end'>
+            <button onClick={handleOcr} className="font-mono" type="submit" style={{ padding: '10px', borderRadius: '5px', border: 'none', background: '#00B29F', color: '#fff', marginLeft: '5px' }}>
+            🧠
+            </button>
             <SpeechRecognitionComponent onTextChange={handleVoiceInput} onFinalText={handleFinalVoiceInput}/>
             <button className="font-mono" type="submit" style={{ padding: '10px', borderRadius: '5px', border: 'none', background: '#00B29F', color: '#fff', marginLeft: '5px' }}>
               Send

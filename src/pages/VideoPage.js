@@ -162,7 +162,7 @@ const VideoPage = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div className="h-full" style={{ padding: '20px' }}>
       <form onSubmit={handleSearch} style={{ marginBottom: '20px' }}>
 
         <div className='flex flex-row'>
@@ -189,38 +189,38 @@ const VideoPage = () => {
             <p>Current Time: {currentTime} seconds</p>
           </div>
         </div>
-        <div style={{ flex: 1, paddingLeft: '20px' }}>
-          <Chatbot />
+        <div className="h-full" style={{ flex: 1, paddingLeft: '20px' }}>
+          <Chatbot currentTime={currentTime} />
         </div>
       </div>
-      {currentQuestionIndex !== -1 && (
-        <div style={{ marginTop: '20px', padding: '20px', border: '1px solid #ccc', borderRadius: '5px', background: '#f9f9f9' }}>
-          <h3>{quizData[currentQuestionIndex].question}</h3>
-          {quizData[currentQuestionIndex].answers.map((answer, index) => (
-            <div
-              key={index}
-              onClick={() => handleAnswerSelect(answer)}
-              style={{
-                padding: '10px',
-                margin: '5px 0',
-                borderRadius: '5px',
-                border: selectedAnswer === answer ? '2px solid red' : '1px solid #ccc',
-                background: selectedAnswer === answer ? '#f8d7da' : '#fff',
-                cursor: 'pointer'
-              }}
-            >
-              {answer}
-            </div>
-          ))}
-          {feedbackMessage && <div style={{ marginTop: '10px', color: selectedAnswer === quizData[currentQuestionIndex].correct_answer ? 'green' : 'red' }}>{feedbackMessage}</div>}
-          <button onClick={handleSkipQuestion} style={{ marginTop: '20px', padding: '10px 20px', borderRadius: '5px', border: 'none', background: '#007bff', color: '#fff', cursor: 'pointer' }}>
-            Skip
-          </button>
+        {currentQuestionIndex !== -1 && (
+          <div style={{ marginTop: '20px', padding: '20px', border: '1px solid #ccc', borderRadius: '5px', background: '#f9f9f9' }}>
+            <h3>{quizData[currentQuestionIndex].question}</h3>
+            {quizData[currentQuestionIndex].answers.map((answer, index) => (
+              <div
+                key={index}
+                onClick={() => handleAnswerSelect(answer)}
+                style={{
+                  padding: '10px',
+                  margin: '5px 0',
+                  borderRadius: '5px',
+                  border: selectedAnswer === answer ? '2px solid red' : '1px solid #ccc',
+                  background: selectedAnswer === answer ? '#f8d7da' : '#fff',
+                  cursor: 'pointer'
+                }}
+              >
+                {answer}
+              </div>
+            ))}
+            {feedbackMessage && <div style={{ marginTop: '10px', color: selectedAnswer === quizData[currentQuestionIndex].correct_answer ? 'green' : 'red' }}>{feedbackMessage}</div>}
+            <button onClick={handleSkipQuestion} style={{ marginTop: '20px', padding: '10px 20px', borderRadius: '5px', border: 'none', background: '#007bff', color: '#fff', cursor: 'pointer' }}>
+              Skip
+            </button>
+          </div>
+        )}
+        <div className="flex flex-row justify-end w-full">
+          <AdditionalResources resources={resources}/>
         </div>
-      )}
-      <div className="flex flex-row justify-end w-full">
-        <AdditionalResources resources={resources}/>
-      </div>
     </div>
   );
 };
