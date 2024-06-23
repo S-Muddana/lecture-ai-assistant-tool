@@ -1,8 +1,8 @@
 // utils/uploadToS3.js
 import { s3, bedrockClient } from '../config/awsConfig';
-import { StartIngestionJobCommand } from "@aws-sdk/client-bedrock-agent";
+import { StartIngestionJobCommand, GetIngestionJobCommand } from "@aws-sdk/client-bedrock-agent";
 import { bedrockRuntimeClient } from '../config/awsConfig';
-import { RetrieveCommand } from '@aws-sdk/client-bedrock-agent-runtime';
+import { RetrieveCommand, RetrieveAndGenerateCommand } from '@aws-sdk/client-bedrock-agent-runtime';
 
 
 export const uploadToS3 = async (videoId, transcript) => {
@@ -21,6 +21,24 @@ export const uploadToS3 = async (videoId, transcript) => {
     return null;
   }
 };
+
+export const checkIngestionJobStatus = async (ingestionJobId) => {
+    const params = {
+        knowledgeBaseId: 'CTQRMSSF30', // Replace with your Knowledge Base ID
+        dataSourceId: '3T7UFLW0F8',   // Use the provided Data Source ID
+      ingestionJobId,  // Use the provided Ingestion Job ID
+    };
+  
+    try {
+      const command = new GetIngestionJobCommand(params);
+      const response = await bedrockClient.send(command);
+      console.log('Ingestion job status:', response.ingestionJob.status);
+      return response.ingestionJob.status; // Return the current status
+    } catch (error) {
+      console.error('Error checking ingestion job status:', error);
+      return null;
+    }
+  };
 
 export const startIngestionJob = async () => {
     const params = {
@@ -60,36 +78,27 @@ export const queryKnowledgeBase = async (queryText) => {
   }
 };
 
-// export const uploadFile = async (videoId, transcript) => {
-//     const S3_BUCKET = "lecture-youtube-transcript";
-//     const REGION = "us-east-1";
-
-//     AWS.config.update({
-//       accessKeyId: "AKIAUTEKT5UZJMCERA7U",
-//       secretAccessKey: "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",
-//     });
-//     const s3 = new AWS.S3({
-//       params: { Bucket: S3_BUCKET },
-//       region: REGION,
-//     });
-
-//     const params = {
-//       Bucket: S3_BUCKET,
-//       Key: `transcripts/${videoId}.json`,
-//       Body: JSON.stringify(transcript),
-//     };
-
-//     var upload = s3
-//       .putObject(params)
-//       .on("httpUploadProgress", (evt) => {
-//         console.log(
-//           "Uploading " + parseInt((evt.loaded * 100) / evt.total) + "%"
-//         );
-//       })
-//       .promise();
-
-//     await upload.then((err, data) => {
-//       console.log(err);
-//       alert("File uploaded successfully.");
-//     });
-//   };
+export const retrieveAndGenerate = async (queryText) => {
+    const params = {
+      input: {
+        text: queryText, // User query
+      },
+      retrieveAndGenerateConfiguration: {
+        type: "KNOWLEDGE_BASE",
+        knowledgeBaseConfiguration: {
+          knowledgeBaseId: 'CTQRMSSF30', // Replace with your Knowledge Base ID
+          modelArn: 'amazon.titan-text-premier-v1:0' // Replace with your model ARN
+        }
+      }
+    };
+  
+    try {
+      const command = new RetrieveAndGenerateCommand(params);
+      const response = await bedrockRuntimeClient.send(command);
+      console.log('Retrieve and Generate response:', response);
+      return response; // Return the response for further processing
+    } catch (error) {
+      console.error('Error in retrieve and generate:', error);
+      return null;
+    }
+  };
