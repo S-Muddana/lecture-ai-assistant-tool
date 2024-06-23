@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Chatbot from '../components/Chatbot';
+import AdditionalResources from '../components/AdditionalResources';
 import supabase from '../supabaseClient';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true
+});
 
 const VideoPage = () => {
   const { id } = useParams();
@@ -12,6 +19,7 @@ const VideoPage = () => {
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [player, setPlayer] = useState(null);
   const [quizData, setQuizData] = useState([]);
+  const [resources, setResources] = useState('');
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -40,6 +48,24 @@ const VideoPage = () => {
   
     fetchQuizData();
   }, [id]);
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      const response = await supabase
+        .from('lectures')
+        .select('transcript')
+        .eq('url', `https://www.youtube.com/watch?v=${id}`)
+
+      // console.log(response.data[0].transcript);
+      const resource = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [{"role":"user", "content": "The following is a transcript of a YouTube Video. Please find me additional learning material and resources relating to this content: " + JSON.stringify(response.data[0].transcript)}],
+      });
+      
+      setResources(resource.choices[0].message.content);
+    };
+    fetchResources();
+  }, []);
 
   useEffect(() => {
     // Load the YouTube IFrame Player API code asynchronously.
@@ -192,6 +218,9 @@ const VideoPage = () => {
           </button>
         </div>
       )}
+      <div className="flex flex-row justify-end w-full">
+        <AdditionalResources resources={resources}/>
+      </div>
     </div>
   );
 };

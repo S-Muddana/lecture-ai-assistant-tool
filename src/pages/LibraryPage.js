@@ -60,15 +60,13 @@ const LibraryPage = () => {
   const handleAddVideo = async () => {
     const videoId = extractVideoId(videoUrl);
     const curr_transcript = await fetchTranscript(videoId);
-    setTranscript(curr_transcript);
-
+    console.log(curr_transcript);
     if (videoId && videoTitle) {
       // Generate quiz questions from the transcript
       const quizQuestions = await generateQuizQuestions(curr_transcript);
       console.log(quizQuestions);
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
       const s3Url = await uploadToS3(videoId, curr_transcript);
-
       if (s3Url) {
         setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
         await uploadToSupabase(videoUrl, curr_transcript, videoTitle, thumbnailUrl, quizQuestions);
@@ -77,7 +75,6 @@ const LibraryPage = () => {
       } else {
         alert('Failed to upload transcript to S3.');
       }
-
       setVideoUrl('');
       setVideoTitle('');
     } else {

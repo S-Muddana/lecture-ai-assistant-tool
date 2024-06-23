@@ -5,7 +5,7 @@ async function fetchTranscript(videoId) {
             throw new Error('Network response was not ok');
         }
         const transcript = await response.json();
-        console.log('Transcript:', transcript);
+        // console.log('Transcript:', transcript);
         return transcript;
     } catch (error) {
         console.error('Error fetching transcript:', error);
