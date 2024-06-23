@@ -32,34 +32,16 @@ const VideoPage = () => {
   const { id } = useParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [currentTime, setCurrentTime] = useState(0);
-  // const [quizData, setQuizData] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [player, setPlayer] = useState(null); // State to hold the player instance
 
   const handleSearch = (e) => {
     e.preventDefault();
     console.log(`Searching for: ${searchQuery}`);
     // Handle search logic here
   };
-
-//   // Function to fetch quiz data from Supabase
-//   useEffect(() => {
-//     const fetchQuizData = async () => {
-//       let { data: quiz, error } = await supabase
-//         .from('quiz') // Replace 'quiz' with your Supabase table name
-//         .select('*')
-//         .order('timestamp', { ascending: true });
-
-//       if (error) {
-//         console.error('Error fetching quiz data:', error);
-//       } else {
-//         setQuizData(quiz);
-//       }
-//     };
-
-//     fetchQuizData();
-//   }, []);
 
   useEffect(() => {
     // Load the YouTube IFrame Player API code asynchronously.
@@ -68,19 +50,20 @@ const VideoPage = () => {
     const firstScriptTag = document.getElementsByTagName("script")[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-    let player;
+    let playerInstance;
     const onYouTubeIframeAPIReady = () => {
-      player = new window.YT.Player("player", {
+      playerInstance = new window.YT.Player("player", {
         videoId: id,
         height: "400",
         width: "100%",
         events: {
-          onReady: onPlayerReady
+          onReady: () => onPlayerReady(playerInstance)
         }
       });
+      setPlayer(playerInstance); // Store player instance in state
     };
 
-    const onPlayerReady = () => {
+    const onPlayerReady = (player) => {
       const iframeWindow = player.getIframe().contentWindow;
       let lastTimeUpdate = 0;
 
@@ -92,7 +75,6 @@ const VideoPage = () => {
             if (time !== lastTimeUpdate) {
               lastTimeUpdate = time;
               setCurrentTime(time); // Update state with the current time
-              console.log(time); // You can update the DOM or do something else with the time
               const questionIndex = quizData.findIndex(item => item.timestamp === time);
               if (questionIndex !== -1 && questionIndex !== currentQuestionIndex) {
                 player.pauseVideo();
@@ -136,7 +118,6 @@ const VideoPage = () => {
       setTimeout(() => {
         setCurrentQuestionIndex(-1);
         setFeedbackMessage('');
-        const player = document.getElementById('player');
         if (player) {
           player.playVideo();
         }
@@ -150,7 +131,6 @@ const VideoPage = () => {
     setCurrentQuestionIndex(-1);
     setSelectedAnswer(null);
     setFeedbackMessage('');
-    const player = document.getElementById('player');
     if (player) {
       player.playVideo();
     }
