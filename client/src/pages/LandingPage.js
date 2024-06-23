@@ -37,6 +37,10 @@ const LandingPage = () => {
     }
   };
 
+  const handleStart = () => {
+      navigate("/library");
+  };
+
   const handlePasteClick = async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -104,6 +108,14 @@ const LandingPage = () => {
             Paste
           </button>
         </div>
+        <button
+            onClick={handleStart}
+            className="ml-4 px-4 py-2 transition duration-200 rounded-lg text-white"
+            style={{ backgroundColor: '#7480ff', marginTop: '20px'}}
+
+          >
+            Get Started
+          </button>
       </div>
     </div>
   );
