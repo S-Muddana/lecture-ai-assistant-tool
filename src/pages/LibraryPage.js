@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import supabase from '../supabaseClient';
+import {fetchTranscript} from '../utils/Transcript';
 
 const LibraryPage = () => {
   const [videos, setVideos] = useState([]);
   const [videoUrl, setVideoUrl] = useState('');
   const [videoTitle, setVideoTitle] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [transcript, setTranscript] = useState('');
+
 
   useEffect(() => {
     fetchSupabase();
@@ -45,12 +48,15 @@ const LibraryPage = () => {
     }
   };
 
-  const handleAddVideo = () => {
+  const handleAddVideo = async () => {
     const videoId = extractVideoId(videoUrl);
+    const curr_transcript = await fetchTranscript(videoId);
+    setTranscript(curr_transcript);
+    console.log(curr_transcript);
     if (videoId && videoTitle) {
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
       setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
-      uploadToSupabase(videoUrl, {data: 'test'}, videoTitle, thumbnailUrl);
+      uploadToSupabase(videoUrl, curr_transcript, videoTitle, thumbnailUrl);
       setVideoUrl('');
       setVideoTitle('');
     } else {
