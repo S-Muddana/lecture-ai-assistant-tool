@@ -122,7 +122,9 @@ const VideoPage = () => {
     const onPlayerReady = (player) => {
       console.log(seconds, "seconds");
       player.seekTo(seconds, true);
-      player.playVideo();
+      if (player.playVideo()) {
+        player.playVideo();
+      }
       const iframeWindow = player.getIframe().contentWindow;
       let lastTimeUpdate = 0;
 
@@ -144,7 +146,9 @@ const VideoPage = () => {
                 console.log("Quiz Time!");
               } else if (currentQuestionIndex !== -1 && quizData[currentQuestionIndex].timestamp < time) {
                 setCurrentQuestionIndex(-1);
-                player.playVideo();
+                if (player.playVideo()) {
+                  player.playVideo();
+                }
               }
             }
           }
