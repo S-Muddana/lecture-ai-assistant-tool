@@ -29,10 +29,10 @@ const LibraryPage = () => {
     setVideos(dummyVideos);
   };
 
-  const uploadToSupabase = async (url, s3Url, title, thumbnail) => {
+  const uploadToSupabase = async (url, transcript, title, thumbnail) => {
     const { data, error } = await supabase
       .from('lectures')
-      .insert([{ url: url, transcript: s3Url, title: title, thumbnail: thumbnail }]);
+      .insert([{ url: url, transcript: transcript, title: title, thumbnail: thumbnail }]);
   };
 
   const extractVideoId = (url) => {
@@ -53,21 +53,18 @@ const LibraryPage = () => {
   const handleAddVideo = async () => {
     const videoId = extractVideoId(videoUrl);
     const curr_transcript = await fetchTranscript(videoId);
-    setTranscript(curr_transcript);
     console.log(curr_transcript);
     if (videoId && videoTitle) {
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
       const s3Url = await uploadToS3(videoId, curr_transcript);
-
       if (s3Url) {
         setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
-        await uploadToSupabase(videoUrl, s3Url, videoTitle, thumbnailUrl);
+        await uploadToSupabase(videoUrl, curr_transcript, videoTitle, thumbnailUrl);
         const ingestionJobId = await startIngestionJob();
         console.log(`Ingestion job started with ID: ${ingestionJobId}`);
       } else {
         alert('Failed to upload transcript to S3.');
       }
-
       setVideoUrl('');
       setVideoTitle('');
     } else {
