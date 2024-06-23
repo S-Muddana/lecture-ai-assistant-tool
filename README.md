@@ -3,15 +3,11 @@ UC Berkeley AI Hackathon Project by Satvik Muddana, Aldrin Ong, Subham Mitra, an
 
 # How to run the app
 
-npm install or npm install -g npm@10.8.1
+git clone https://github.com/S-Muddana/lecture-ai-assistant-tool/
 
-npm install react-router-dom
+npm install
 
-npm install openai
-
-npm install @supabase/supabase-js
-
-Add your openai key to the .env file
+Add your OpenAI key to the .env file
 
 npm start
 
