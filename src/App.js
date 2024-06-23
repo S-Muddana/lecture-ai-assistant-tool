@@ -8,39 +8,12 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/lecture-ai-assistant-tool" element={<LandingPage />} />
-        <Route path="/lecture-ai-assistant-tool/library" element={<LibraryPage />} />
-        <Route path="/lecture-ai-assistant-tool/video/:id" element={<VideoPage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/library" element={<LibraryPage />} />
+        <Route path="/video/:id" element={<VideoPage />} />
       </Routes>
     </Router>
   );
 };
 
 export default App;
-
-
-// import logo from './logo.svg';
-// import './App.css';
-
-// function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.js</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
-
-// export default App;

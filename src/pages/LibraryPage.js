@@ -133,7 +133,7 @@ const LibraryPage = () => {
               }}>
               <Link
                   to={{
-                    pathname: `/lecture-ai-assistant-tool/video/${video.videoId}`,
+                    pathname: `/video/${video.videoId}`,
                     state: { title: video.title }
                   }}
                   style={{ textDecoration: 'none', color: 'inherit' }}
