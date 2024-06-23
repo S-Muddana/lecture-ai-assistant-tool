@@ -10,10 +10,10 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true
 });
 
-const Chatbot = () => {
+const Chatbot = ({ initialResponse }) => {
   const { id } = useParams();
   const videoUrl = `https://www.youtube.com/watch?v=${id}`;
-  const [messages, setMessages] = useState([{ sender: 'bot', text: 'Hi! How can I help you today?' }]);
+  const [messages, setMessages] = useState([{ sender: 'bot', text: initialResponse || 'Hi! How can I help you today?' }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [interimInput, setInterimInput] = useState('');
@@ -41,6 +41,7 @@ const Chatbot = () => {
       .eq('url', videoUrl);
 
     const initialPrompt = 'The following is a transcript of a YouTube Video. From now on, I will ask you questions regarding information that may be in this video. Please refer to this transcript as necessary in order to answer my questions accurately.';
+    console.log(videoUrl);
     conversationHistory.current.push({"role": "user", "content": initialPrompt + '\n' + JSON.stringify(data[0].transcript)});
     console.log(conversationHistory.current);
   }

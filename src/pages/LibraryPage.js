@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import supabase from '../supabaseClient';
 import { fetchTranscript } from '../utils/Transcript';
-import { uploadToS3, startIngestionJob, queryKnowledgeBase } from '../utils/uploadToS3';
+import { uploadToS3, startIngestionJob, queryKnowledgeBase, retrieveAndGenerate, checkIngestionJobStatus } from '../utils/uploadToS3';
 import '../index.css';
 
 const LibraryPage = () => {
@@ -10,7 +11,11 @@ const LibraryPage = () => {
   const [videoUrl, setVideoUrl] = useState('');
   const [videoTitle, setVideoTitle] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [isIngesting, setIsIngesting] = useState(false);
+  const [ingestionStatus, setIngestionStatus] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchSupabase();
@@ -61,9 +66,30 @@ const LibraryPage = () => {
 
       if (s3Url) {
         setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
-        await uploadToSupabase(videoUrl, s3Url, videoTitle, thumbnailUrl);
+        await uploadToSupabase(videoUrl, curr_transcript, videoTitle, thumbnailUrl);
         const ingestionJobId = await startIngestionJob();
         console.log(`Ingestion job started with ID: ${ingestionJobId}`);
+        setIsIngesting(true);
+        setIngestionStatus('Ingestion job started...');
+
+        // Poll for ingestion status
+        let status;
+        do {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 seconds
+          console.log('Checking ingestion job status...');
+          status = await checkIngestionJobStatus(ingestionJobId);
+          setIngestionStatus(`Current status: ${status}`);
+        } while (status && status !== 'COMPLETE');
+
+        if (status === 'COMPLETE') {
+          console.log('Ingestion job completed successfully.');
+          setIngestionStatus('Ingestion job completed successfully.');
+          alert('Ingestion job completed successfully.');
+        } else {
+          console.error('Ingestion job did not complete successfully.');
+          setIngestionStatus('Ingestion job failed.');
+        }
+        setIsIngesting(false);
       } else {
         alert('Failed to upload transcript to S3.');
       }
@@ -83,8 +109,16 @@ const LibraryPage = () => {
   }
 
   const handleSearch = async () => {
-    const results = await queryKnowledgeBase(searchTerm);
-    console.log('Search results:', results);
+    setIsSearching(true);
+    try {
+      const results = await retrieveAndGenerate(searchTerm);
+      console.log('Search results:', results);
+      navigate('/search-results', { state: { results: results.output.text, citations: results.citations } });
+    } catch (error) {
+      console.error('Error during search:', error);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
 
@@ -93,17 +127,27 @@ const LibraryPage = () => {
       <div className="flex flex-row justify-between pb-10">
         <h1 className="font-semibold text-5xl font-mono">Lecture Library 📖</h1>
         <label className="input input-bordered flex items-center gap-2 w-2/5">
-          <input 
-            type="text" 
-            className="grow" 
-            placeholder="Search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 opacity-70"><path fillRule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clipRule="evenodd" /></svg>
-          <button onClick={handleSearch} style={{ marginLeft: '10px' }}>
+        <input
+          type="text"
+          className="grow"
+          placeholder="Search"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyPress={(e) => { if (e.key === 'Enter') handleSearch(); }} // This line allows submitting with Enter key
+        />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+            className="w-4 h-4 opacity-70"
+            onClick={handleSearch} // This line makes the SVG clickable
+            style={{ cursor: 'pointer' }} // This line changes the cursor to indicate it's clickable
+          >
+            <path fillRule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clipRule="evenodd" />
+          </svg>
+          {/* <button onClick={handleSearch} style={{ marginLeft: '10px' }} disabled={isSearching}>
           Search
-        </button>
+        </button> */}
         </label>
       </div>
 
@@ -158,6 +202,29 @@ const LibraryPage = () => {
         style={{ marginRight: '10px', marginLeft: '10px' }}
       />
       <button className="btn btn-primary" onClick={handleAddVideo}>Add Video</button> */}
+      {isSearching && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)', // Translucent overlay
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000, // Ensure it's above other elements
+          }}
+        >
+          <div style={{ textAlign: 'center', color: '#fff' }}>
+            <span className="loading loading-spinner loading-lg" style={{ marginBottom: '20px' }}></span>
+            <h2 style={{ marginBottom: '10px' }}>Loading...</h2>
+            <p>Please wait while we fetch the search results.</p>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

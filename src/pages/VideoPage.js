@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import Chatbot from '../components/Chatbot';
+import { retrieveAndGenerate } from '../utils/uploadToS3';
 import supabase from '../supabaseClient';
 
 const VideoPage = () => {
@@ -30,17 +31,30 @@ const VideoPage = () => {
     // Add more questions as needed
   ];
   const { id } = useParams();
+  const location = useLocation();
+  const { seconds = 0, response } = location.state || {};
+  const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentTime, setCurrentTime] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [player, setPlayer] = useState(null); // State to hold the player instance
+  const navigate = useNavigate();
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    console.log(`Searching for: ${searchQuery}`);
-    // Handle search logic here
+  const handleSearch = async () => {
+    // e.preventDefault();
+    setIsSearching(true);
+    try {
+      console.log('Search query:', searchQuery);
+      const results = await retrieveAndGenerate(searchQuery);
+      console.log('Search results:', results);
+      navigate('/search-results', { state: { results: results.output.text, citations: results.citations } });
+    } catch (error) {
+      console.error('Error during search:', error);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   useEffect(() => {
@@ -49,6 +63,10 @@ const VideoPage = () => {
     tag.src = "https://www.youtube.com/iframe_api";
     const firstScriptTag = document.getElementsByTagName("script")[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    console.log(id);
+    console.log(seconds);
+
+
 
     let playerInstance;
     const onYouTubeIframeAPIReady = () => {
@@ -64,6 +82,9 @@ const VideoPage = () => {
     };
 
     const onPlayerReady = (player) => {
+      console.log(seconds, "seconds");
+      player.seekTo(seconds, true);
+      player.playVideo();
       const iframeWindow = player.getIframe().contentWindow;
       let lastTimeUpdate = 0;
 
@@ -138,18 +159,19 @@ const VideoPage = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <form onSubmit={handleSearch} style={{ marginBottom: '20px' }}>
+      {/* <form onSubmit={handleSearch} style={{ marginBottom: '20px' }}> */}
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search..."
-          style={{ width: '80%', padding: '10px', fontSize: '16px' }}
+          onKeyPress={(e) => { if (e.key === 'Enter') handleSearch(); }}
+          style={{ width: '80%', padding: '10px', fontSize: '16px', marginBottom: '20px'}}
         />
-        <button type="submit" style={{ padding: '10px 20px', fontSize: '16px' }}>
+        <button onClick={handleSearch} type="submit" style={{ padding: '10px 20px', fontSize: '16px' }}>
           Search
         </button>
-      </form>
+      {/* </form> */}
       <div style={{ display: 'flex' }}>
         <div style={{ flex: 1 }}>
           <div id="player-container" style={{ position: 'relative', width: '100%', height: '400px' }}>
@@ -157,10 +179,12 @@ const VideoPage = () => {
           </div>
           <div style={{ paddingTop: '10px' }}>
             <p>Current Time: {currentTime} seconds</p>
+            {/* <p>{seconds} seconds</p>
+            <p>{title} title</p> */}
           </div>
         </div>
         <div style={{ flex: 1, paddingLeft: '20px' }}>
-          <Chatbot />
+          <Chatbot initialResponse={response}/>
         </div>
       </div>
       {currentQuestionIndex !== -1 && (
@@ -186,6 +210,28 @@ const VideoPage = () => {
           <button onClick={handleSkipQuestion} style={{ marginTop: '20px', padding: '10px 20px', borderRadius: '5px', border: 'none', background: '#007bff', color: '#fff', cursor: 'pointer' }}>
             Skip
           </button>
+        </div>
+      )}
+      {isSearching && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)', // Translucent overlay
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000, // Ensure it's above other elements
+          }}
+        >
+          <div style={{ textAlign: 'center', color: '#fff' }}>
+            <span className="loading loading-spinner loading-lg" style={{ marginBottom: '20px' }}></span>
+            <h2 style={{ marginBottom: '10px' }}>Loading...</h2>
+            <p>Please wait while we fetch the search results.</p>
+          </div>
         </div>
       )}
     </div>
