@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import OpenAI from 'openai';
+import supabase from '../supabaseClient';
+import { useParams } from 'react-router-dom';
 
 // Configure the OpenAI client
 const openai = new OpenAI({
@@ -8,23 +10,43 @@ const openai = new OpenAI({
 });
 
 const Chatbot = () => {
+  const { id } = useParams();
+  const videoUrl = `https://www.youtube.com/watch?v=${id}`;
   const [messages, setMessages] = useState([{ sender: 'bot', text: 'Hi! How can I help you today?' }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+
+  const [prompt, setPrompt] = useState('');
+  const conversationHistory = useRef([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
+    fetchTranscript();
+  }, [])
+
+  useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const fetchTranscript = async () => {
+    const { data, error } = await supabase
+      .from('lectures')
+      .select()
+      .eq('url', videoUrl);
+
+    const initialPrompt = 'The following is a transcript of a YouTube Video. From now on, I will ask you questions regarding information that may be in this video. Please refer to this transcript as necessary in order to answer my questions accurately.';
+    conversationHistory.current.push({"role": "user", "content": initialPrompt + '\n' + data[0].transcript});
+  }
 
   const handleSend = async (e) => {
     e.preventDefault();
     if (input.trim()) {
       const userMessage = { sender: 'user', text: input };
+      conversationHistory.current.push({"role": "user", "content":input});
       setMessages([...messages, userMessage]);
       setInput('');
       setLoading(true);
@@ -32,7 +54,7 @@ const Chatbot = () => {
       try {
         const response = await openai.chat.completions.create({
           model: 'gpt-3.5-turbo',
-          messages: [{ role: 'user', content: input }],
+          messages: conversationHistory.current,
         });
 
         const botMessage = {
@@ -40,6 +62,9 @@ const Chatbot = () => {
           text: response.choices[0].message.content.trim(),
         };
         setMessages([...messages, userMessage, botMessage]);
+
+        conversationHistory.current.push({"role": "assistant", "content":response.choices[0].message.content.trim()});
+
       } catch (error) {
         console.error('Error fetching response:', error);
         const botMessage = { sender: 'bot', text: 'Sorry, something went wrong.' };
