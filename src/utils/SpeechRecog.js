@@ -46,7 +46,7 @@ const SpeechRecognitionComponent = ({ onTextChange, onFinalText }) => {
   };
 
   return (
-      <button onClick={handleListen} style={{ padding: '10px', borderRadius: '5px', border: 'none', background: listening ? '#0056b3' : '#007bff', color: '#fff', marginLeft: '5px' }}>
+      <button onClick={handleListen} style={{ padding: '10px', borderRadius: '5px', border: 'none', background: listening ? '#0056b3' : '#00B29F', color: '#fff', marginLeft: '5px' }}>
         <FontAwesomeIcon icon={faMicrophone} />
       </button>
   );

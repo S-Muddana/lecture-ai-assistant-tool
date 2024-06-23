@@ -45,7 +45,7 @@ export const startIngestionJob = async () => {
       knowledgeBaseId: 'CTQRMSSF30', // Replace with your Knowledge Base ID
       dataSourceId: '3T7UFLW0F8', // Replace with your Data Source ID
     };
-  
+ 
     try {
       const command = new StartIngestionJobCommand(params);
       const result = await bedrockClient.send(command);

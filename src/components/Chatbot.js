@@ -89,11 +89,11 @@ const Chatbot = ({ initialResponse }) => {
   };
 
   return (
-    <div style={{ border: '1px solid #ccc', borderRadius: '5px', padding: '10px', height: '400px', display: 'flex', flexDirection: 'column' }}>
+    <div className="rounded-md" style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', padding: '10px', height: '400px', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px' }}>
         {messages.map((message, index) => (
           <div key={index} style={{ textAlign: message.sender === 'bot' ? 'left' : 'right' }}>
-            <div style={{ display: 'inline-block', padding: '10px', borderRadius: '5px', margin: '5px 0', background: message.sender === 'bot' ? '#f1f1f1' : '#007bff', color: message.sender === 'bot' ? '#000' : '#fff' }}>
+            <div className="font-mono" style={{ display: 'inline-block', padding: '10px', borderRadius: '5px', margin: '5px 0', background: message.sender === 'bot' ? '#7380FF' : '#7380FF', color: message.sender === 'bot' ? '#000' : '#fff' }}>
               {message.text}
             </div>
           </div>
@@ -108,17 +108,21 @@ const Chatbot = ({ initialResponse }) => {
         <div ref={messagesEndRef} />
       </div>
       <form onSubmit={handleSend} style={{ display: 'flex' }}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message..."
-          style={{ flex: 1, padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
-        />
-        <SpeechRecognitionComponent onTextChange={handleVoiceInput} onFinalText={handleFinalVoiceInput}/>
-        <button type="submit" style={{ padding: '10px', borderRadius: '5px', border: 'none', background: '#007bff', color: '#fff', marginLeft: '5px' }}>
-          Send
-        </button>
+        <div className='flex flex-row w-full justify-between'>
+          <input 
+            type="text" 
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type a message..." 
+            className="input input-bordered w-5/6" 
+          />
+          <div className='flex flex-row justify-end'>
+            <SpeechRecognitionComponent onTextChange={handleVoiceInput} onFinalText={handleFinalVoiceInput}/>
+            <button className="font-mono" type="submit" style={{ padding: '10px', borderRadius: '5px', border: 'none', background: '#00B29F', color: '#fff', marginLeft: '5px' }}>
+              Send
+            </button>
+          </div>
+        </div>
       </form>
     </div>
   );

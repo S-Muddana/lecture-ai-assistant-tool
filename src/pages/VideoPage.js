@@ -2,34 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import Chatbot from '../components/Chatbot';
 import { retrieveAndGenerate } from '../utils/uploadToS3';
+import AdditionalResources from '../components/AdditionalResources';
 import supabase from '../supabaseClient';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true
+});
 
 const VideoPage = () => {
-  const quizData = [
-    {
-      "question": "What is the capital of France?",
-      "answers": [
-        "London",
-        "Paris",
-        "Berlin",
-        "Rome"
-      ],
-      "correct_answer": "Paris",
-      "timestamp": 30
-    },
-    {
-      "question": "Who painted the Mona Lisa?",
-      "answers": [
-        "Leonardo da Vinci",
-        "Pablo Picasso",
-        "Vincent van Gogh",
-        "Claude Monet"
-      ],
-      "correct_answer": "Leonardo da Vinci",
-      "timestamp": 60
-    },
-    // Add more questions as needed
-  ];
   const { id } = useParams();
   const location = useLocation();
   const { seconds = 0, response } = location.state || {};
@@ -39,23 +21,56 @@ const VideoPage = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [player, setPlayer] = useState(null); // State to hold the player instance
+  const [player, setPlayer] = useState(null);
+  const [quizData, setQuizData] = useState([]);
+  const [resources, setResources] = useState('');
   const navigate = useNavigate();
 
-  const handleSearch = async () => {
-    // e.preventDefault();
-    setIsSearching(true);
-    try {
-      console.log('Search query:', searchQuery);
-      const results = await retrieveAndGenerate(searchQuery);
-      console.log('Search results:', results);
-      navigate('/search-results', { state: { results: results.output.text, citations: results.citations } });
-    } catch (error) {
-      console.error('Error during search:', error);
-    } finally {
-      setIsSearching(false);
-    }
+  const handleSearch = (e) => {
+    e.preventDefault();
+    console.log(`Searching for: ${searchQuery}`);
+    // Handle search logic here
   };
+
+  useEffect(() => {
+    const fetchQuizData = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('lectures')
+            .select('questions')
+            .eq('url', `https://www.youtube.com/watch?v=${id}`)
+            .single();
+
+          if (error) {
+            throw new Error(error.message);
+          }
+          console.log(data.questions.questions);
+          setQuizData(data.questions.questions || []);
+        } catch (error) {
+            console.error('Error fetching quiz data:', error);
+        }
+    };
+  
+    fetchQuizData();
+  }, [id]);
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      const response = await supabase
+        .from('lectures')
+        .select('transcript')
+        .eq('url', `https://www.youtube.com/watch?v=${id}`)
+
+      // console.log(response.data[0].transcript);
+      const resource = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [{"role":"user", "content": "The following is a transcript of a YouTube Video. Please find me additional learning material and resources relating to this content: " + JSON.stringify(response.data[0].transcript)}],
+      });
+      
+      setResources(resource.choices[0].message.content);
+    };
+    fetchResources();
+  }, []);
 
   useEffect(() => {
     // Load the YouTube IFrame Player API code asynchronously.
@@ -96,6 +111,7 @@ const VideoPage = () => {
             if (time !== lastTimeUpdate) {
               lastTimeUpdate = time;
               setCurrentTime(time); // Update state with the current time
+              console.log(quizData);
               const questionIndex = quizData.findIndex(item => item.timestamp === time);
               if (questionIndex !== -1 && questionIndex !== currentQuestionIndex) {
                 player.pauseVideo();
@@ -130,7 +146,7 @@ const VideoPage = () => {
       window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
     }
 
-  }, [id]);
+  }, [id, quizData, currentQuestionIndex]);
 
   const handleAnswerSelect = (answer) => {
     setSelectedAnswer(answer);
@@ -160,17 +176,22 @@ const VideoPage = () => {
   return (
     <div style={{ padding: '20px' }}>
       {/* <form onSubmit={handleSearch} style={{ marginBottom: '20px' }}> */}
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search..."
-          onKeyPress={(e) => { if (e.key === 'Enter') handleSearch(); }}
-          style={{ width: '80%', padding: '10px', fontSize: '16px', marginBottom: '20px'}}
-        />
-        <button onClick={handleSearch} type="submit" style={{ padding: '10px 20px', fontSize: '16px' }}>
-          Search
-        </button>
+
+        <div className='flex flex-row'>
+          <label className="input input-bordered flex items-center gap-2 w-4/5">
+            <input 
+              type="text" 
+              className="grow" 
+              placeholder="Search..."
+              value={searchQuery}
+              onKeyPress={(e) => { if (e.key === 'Enter') handleSearch(); }}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 opacity-70"><path fillRule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clipRule="evenodd" /></svg>
+          </label>
+          <button onClick={handleSearch} className="btn btn-primary w-1/8 ml-5" type="submit">Search</button>
+        </div>
+        
       {/* </form> */}
       <div style={{ display: 'flex' }}>
         <div style={{ flex: 1 }}>
@@ -212,6 +233,9 @@ const VideoPage = () => {
           </button>
         </div>
       )}
+      <div className="flex flex-row justify-end w-full">
+        <AdditionalResources resources={resources}/>
+      </div>
       {isSearching && (
         <div
           style={{

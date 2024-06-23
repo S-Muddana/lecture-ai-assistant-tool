@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../supabaseClient';
 import { fetchTranscript } from '../utils/Transcript';
+import { generateQuizQuestions } from '../utils/QuizGenerator';
 import { uploadToS3, startIngestionJob, queryKnowledgeBase, retrieveAndGenerate, checkIngestionJobStatus } from '../utils/uploadToS3';
 import '../index.css';
 
@@ -34,10 +35,16 @@ const LibraryPage = () => {
     setVideos(dummyVideos);
   };
 
-  const uploadToSupabase = async (url, s3Url, title, thumbnail) => {
+  const uploadToSupabase = async (url, transcript, title, thumbnail, questions) => {
     const { data, error } = await supabase
       .from('lectures')
-      .insert([{ url: url, transcript: s3Url, title: title, thumbnail: thumbnail }]);
+      .insert([
+        { url: url, transcript: transcript, title: title, thumbnail: thumbnail, questions: questions }
+      ]);
+
+    if (error) {
+      console.error('Error uploading to Supabase:', error);
+    }
   };
 
   const extractVideoId = (url) => {
@@ -58,15 +65,16 @@ const LibraryPage = () => {
   const handleAddVideo = async () => {
     const videoId = extractVideoId(videoUrl);
     const curr_transcript = await fetchTranscript(videoId);
-    setTranscript(curr_transcript);
     console.log(curr_transcript);
     if (videoId && videoTitle) {
+      // Generate quiz questions from the transcript
+      const quizQuestions = await generateQuizQuestions(curr_transcript);
+      console.log(quizQuestions);
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
       const s3Url = await uploadToS3(videoId, curr_transcript);
-
       if (s3Url) {
         setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
-        await uploadToSupabase(videoUrl, curr_transcript, videoTitle, thumbnailUrl);
+        await uploadToSupabase(videoUrl, curr_transcript, videoTitle, thumbnailUrl, quizQuestions);
         const ingestionJobId = await startIngestionJob();
         console.log(`Ingestion job started with ID: ${ingestionJobId}`);
         setIsIngesting(true);
@@ -93,7 +101,6 @@ const LibraryPage = () => {
       } else {
         alert('Failed to upload transcript to S3.');
       }
-
       setVideoUrl('');
       setVideoTitle('');
     } else {
@@ -179,29 +186,15 @@ const LibraryPage = () => {
                     className="rounded-md"
                   />
                 </Link>
-                <div className='flex flex-row justify-center'>
-                  <button onClick={() => handleDeleteVideo(`https://www.youtube.com/watch?v=${video.videoId}`)}>🗑️</button>
-                  <p className="text-lg font-semibold font-mono">{video.title}</p>
+                <div className='flex flex-row justify-between pt-1'>
+                  <p className="text-lg font-semibold font-mono pl-2">{video.title}</p>
+                  <button className="pr-2" onClick={() => handleDeleteVideo(`https://www.youtube.com/watch?v=${video.videoId}`)}>🗑️</button>
                 </div>
               </div>
           </div>
         ))}
       </div>
-      {/* <input
-        type="text"
-        placeholder="YouTube URL"
-        value={videoUrl}
-        onChange={(e) => setVideoUrl(e.target.value)}
-        style={{ marginRight: '10px' }}
-      />
-      <input
-        type="text"
-        placeholder="Video Title"
-        value={videoTitle}
-        onChange={(e) => setVideoTitle(e.target.value)}
-        style={{ marginRight: '10px', marginLeft: '10px' }}
-      />
-      <button className="btn btn-primary" onClick={handleAddVideo}>Add Video</button> */}
+      
       {isSearching && (
         <div
           style={{
