@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import supabase from '../supabaseClient';
 import { fetchTranscript } from '../utils/Transcript';
 import { uploadToS3, startIngestionJob, queryKnowledgeBase } from '../utils/uploadToS3';
+import '../index.css';
 
 const LibraryPage = () => {
   const [videos, setVideos] = useState([]);
@@ -13,7 +14,7 @@ const LibraryPage = () => {
 
   useEffect(() => {
     fetchSupabase();
-  }, []);
+  }, [videos]);
 
   const fetchSupabase = async () => {
     const { data, error } = await supabase.from('lectures').select('*');
@@ -55,7 +56,7 @@ const LibraryPage = () => {
     setTranscript(curr_transcript);
     console.log(curr_transcript);
     if (videoId && videoTitle) {
-      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
       const s3Url = await uploadToS3(videoId, curr_transcript);
 
       if (s3Url) {
@@ -74,6 +75,13 @@ const LibraryPage = () => {
     }
   };
 
+  const handleDeleteVideo = async (url) => {
+    const response = await supabase
+      .from('lectures')
+      .delete()
+      .eq('url', url);
+  }
+
   const handleSearch = async () => {
     const results = await queryKnowledgeBase(searchTerm);
     console.log('Search results:', results);
@@ -81,49 +89,61 @@ const LibraryPage = () => {
 
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Library</h2>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-        <input
-          type="text"
-          placeholder="Search videos"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ marginRight: '10px', flex: 1 }}
-        />
-        <button onClick={handleSearch} style={{ marginLeft: '10px' }}>
+    <div style={{ padding: '50px' }}>
+      <div className="flex flex-row justify-between pb-10">
+        <h1 className="font-semibold text-5xl font-mono">Lecture Library 📖</h1>
+        <label className="input input-bordered flex items-center gap-2 w-2/5">
+          <input 
+            type="text" 
+            className="grow" 
+            placeholder="Search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 opacity-70"><path fillRule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clipRule="evenodd" /></svg>
+          <button onClick={handleSearch} style={{ marginLeft: '10px' }}>
           Search
         </button>
+        </label>
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+
+      <div className="flex flex-row justify-between w-4/5">
+        <input type="text" placeholder="Enter Title" className="input input-bordered input-primary w-full max-w-xs" value={videoTitle} onChange={(e) => setVideoTitle(e.target.value)} />
+        <input type="text" placeholder="Enter URL" className="input input-bordered input-primary w-full max-w-xs" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} />
+        <button className="btn btn-primary w-1/6" onClick={handleAddVideo}>Add Video</button>
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }} className='flex flex-row justify-center pt-11'>
         {videos.map(video => (
           <div key={video.videoId} style={{ marginBottom: '20px' }}>
-            <Link
-              to={{
-                pathname: `/video/${video.videoId}`,
-                state: { title: video.title }
-              }}
-              style={{ textDecoration: 'none', color: 'inherit' }}
-            >
               <div style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
                 overflow: 'hidden',
-                width: '200px',
+                width: '300px',
                 textAlign: 'center'
               }}>
-                <img
-                  src={video.thumbnailUrl}
-                  alt={`Thumbnail for ${video.title}`}
-                  style={{ width: '100%', height: 'auto' }}
-                />
-                <p>{video.title}</p>
+              <Link
+                  to={{
+                    pathname: `/video/${video.videoId}`,
+                    state: { title: video.title }
+                  }}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <img
+                    src={video.thumbnailUrl}
+                    alt={`Thumbnail for ${video.title}`}
+                    style={{ width: '100%', height: 'auto' }}
+                    className="rounded-md"
+                  />
+                </Link>
+                <div className='flex flex-row justify-center'>
+                  <button onClick={() => handleDeleteVideo(`https://www.youtube.com/watch?v=${video.videoId}`)}>🗑️</button>
+                  <p className="text-lg font-semibold font-mono">{video.title}</p>
+                </div>
               </div>
-            </Link>
           </div>
         ))}
       </div>
-      <input
+      {/* <input
         type="text"
         placeholder="YouTube URL"
         value={videoUrl}
@@ -137,7 +157,7 @@ const LibraryPage = () => {
         onChange={(e) => setVideoTitle(e.target.value)}
         style={{ marginRight: '10px', marginLeft: '10px' }}
       />
-      <button onClick={handleAddVideo}>Add Video</button>
+      <button className="btn btn-primary" onClick={handleAddVideo}>Add Video</button> */}
     </div>
   );
 };
