@@ -4,7 +4,7 @@ const AdditionalResources = (props) => {
     return (
         <div className="w-1/2">
             <details className="w-full collapse collapse-arrow bg-base-200">
-                <summary className="collapse-title text-xl font-medium">Additional Learning Material & Resources</summary>
+                <summary className="collapse-title text-xl font-medium">Additional Learning Materials</summary>
                 <div className="collapse-content"> 
                     <p>{props.resources}</p>
                 </div>
