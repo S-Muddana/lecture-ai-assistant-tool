@@ -12,7 +12,9 @@ const takeScreenshot = require('youtube-screenshot');
 const bodyParser = require('body-parser');
 
 app.use(cors({
-    origin: `${process.env.REACT_APP_CLIENT_URL}`
+    origin: `${process.env.REACT_APP_CLIENT_URL}`,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Use CORS middleware with options
