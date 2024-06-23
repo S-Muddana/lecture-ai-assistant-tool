@@ -89,6 +89,7 @@ async function fetchTranscriptServer(videoId) {
 }
 
 app.post('/take-screenshot', async (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*'); // Allow any origin
     const {timestamp} = req.body;
     const {url} = req.body;
 
