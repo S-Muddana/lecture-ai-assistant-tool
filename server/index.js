@@ -20,7 +20,6 @@ const convertOffsetToTime = (offset) => {
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 };
 
-
 const cleanText = (text) => {
     // Replace common HTML entities with their actual characters
     return text.replace(/&amp;#39;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
@@ -54,9 +53,6 @@ const combineTranscriptEntries = (transcript) => {
 
     return combinedTranscript;
 };
-
-
-
 
 async function fetchTranscriptServer(videoId) {
     try {
@@ -124,6 +120,10 @@ app.get('/transcript/:videoId', async (req, res) => {
     }
 });
 
+app.use("/", (req, res) => {
+    res.send("Server is running")
+});
+
 app.listen(port, () => {
-    console.log(`Proxy server listening at http://localhost:${port}`);
+    console.log(`Proxy server listening on port ${port}`);
 });

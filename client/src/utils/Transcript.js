@@ -1,6 +1,6 @@
 async function fetchTranscript(videoId) {
     try {
-        const response = await fetch(`http://localhost:3001/transcript/${videoId}`); // Replace with your localtunnel URL
+        const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/transcript/${videoId}`); // Replace with your localtunnel URL
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
