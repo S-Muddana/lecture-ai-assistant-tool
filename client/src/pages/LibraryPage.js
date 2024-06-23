@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import supabase from "../supabaseClient";
+import NavBar from "../components/navBar";
 import { fetchTranscript } from "../utils/Transcript";
 import { generateQuizQuestions } from "../utils/QuizGenerator";
 import {
@@ -23,10 +24,21 @@ const LibraryPage = () => {
   const [isIngesting, setIsIngesting] = useState(false);
   const [ingestionStatus, setIngestionStatus] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Set video URL from state passed in navigate
+    if (location.state && location.state.videoUrl) {
+      setVideoUrl(location.state.videoUrl);
+    }
+    fetchSupabase();
+  }, [videos, location.state]);
 
   useEffect(() => {
     fetchSupabase();
   }, [videos]);
+
+  
 
   const fetchVideoTitle = async (videoId) => {
     const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
@@ -103,6 +115,7 @@ const LibraryPage = () => {
 
   const handleAddVideo = async () => {
     const videoId = extractVideoId(videoUrl);
+    const standardVideoUrl = `https://www.youtube.com/watch?v=${videoId}`;
     const videoTitle = await fetchVideoTitle(videoId);
     const curr_transcript = await fetchTranscript(videoId);
     console.log(curr_transcript);
@@ -115,7 +128,7 @@ const LibraryPage = () => {
       if (s3Url) {
         setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
         await uploadToSupabase(
-          videoUrl,
+          standardVideoUrl,
           curr_transcript,
           videoTitle,
           thumbnailUrl,
@@ -174,9 +187,12 @@ const LibraryPage = () => {
   };
 
   return (
-    <div style={{ padding: "50px" }}>
+    <div style={{backgroundColor: 'black'}}>
+    <NavBar />
+    <div style={{ padding: "10px", paddingLeft: '50px', paddingRight: '50px', paddingBottom: '50px' }}>
       <div className="flex flex-row justify-between pb-10">
-        <h1 className="font-semibold text-5xl font-mono">Lecture Library 📖</h1>
+      <h1 className="text-white text-xl md:text-4xl font-bold text-center">Lecture Library 📖</h1>
+
         <label className="input input-bordered flex items-center gap-2 w-2/5">
           <input
             type="text"
@@ -325,6 +341,7 @@ const LibraryPage = () => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };

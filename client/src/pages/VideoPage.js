@@ -5,6 +5,8 @@ import { retrieveAndGenerate } from '../utils/uploadToS3';
 import AdditionalResources from '../components/AdditionalResources';
 import supabase from '../supabaseClient';
 import OpenAI from 'openai';
+import NavBar from "../components/navBar";
+
 
 const openai = new OpenAI({
   apiKey: process.env.REACT_APP_OPENAI_API_KEY,
@@ -195,7 +197,9 @@ const VideoPage = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{backgroundColor: 'black', minHeight: "100vh"}}>
+    <NavBar />
+    <div style={{ padding: "0px", paddingLeft: '20px', paddingRight: '20px', paddingBottom: '20px' }}>
       {/* <form onSubmit={handleSearch} style={{ marginBottom: '20px' }}> */}
 
         <div className='flex flex-row' style={{ marginBottom: '20px' }}>
@@ -293,6 +297,7 @@ const VideoPage = () => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };
