@@ -92,7 +92,6 @@ const Chatbot = (props) => {
   const handleOcr = async () => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/take-screenshot`, { timestamp: props.currentTime, url: videoUrl }, {
-        withCredentials: true,
         headers: {
           'Content-Type': 'application/json'
         }
