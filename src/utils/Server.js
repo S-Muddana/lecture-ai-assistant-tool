@@ -1,7 +1,7 @@
 const express = require('express');
 const { YoutubeTranscript } = require('youtube-transcript');
 const cors = require('cors');
-
+const axios = require('axios');
 const app = express();
 const port = 3001;
 
@@ -9,7 +9,7 @@ app.use(cors());
 
 async function fetchTranscript(videoId) {
     try {
-        const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+        const transcript = await YoutubeTranscript.fetchTranscript(videoId, {lang : 'en'});
         console.log('Transcript:', transcript);
         return transcript;
     } catch (error) {

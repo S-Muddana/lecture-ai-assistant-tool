@@ -56,7 +56,7 @@ const LibraryPage = () => {
     if (videoId && videoTitle) {
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
       setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
-      uploadToSupabase(videoUrl, {data: 'test'}, videoTitle, thumbnailUrl);
+      uploadToSupabase(videoUrl, curr_transcript, videoTitle, thumbnailUrl);
       setVideoUrl('');
       setVideoTitle('');
     } else {
