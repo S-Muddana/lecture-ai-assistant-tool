@@ -1,7 +1,6 @@
 {
   "name": "lecture-assistant",
   "version": "0.1.0",
-  "homepage": "https://S-Muddana.github.io/lecture-ai-assistant-tool",
   "private": true,
   "dependencies": {
     "@aws-sdk/client-bedrock-agent": "^3.600.0",
