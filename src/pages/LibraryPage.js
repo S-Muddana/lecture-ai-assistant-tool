@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import supabase from '../supabaseClient';
 
@@ -8,11 +8,25 @@ const LibraryPage = () => {
   const [videoTitle, setVideoTitle] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const uploadToSupabase = async () => {
+  useEffect(() => {
+    fetchSupabase();
+  }, []);
+
+  const fetchSupabase = async () => {
+    const { data, error } = await supabase.from('lectures').select('*');
+    const dummyVideos = [];
+    for (let i=0; i<data.length; i++) {
+      dummyVideos.push({ videoId: extractVideoId(data[i].url), thumbnailUrl: data[i].thumbnail, title: data[i].title });
+    }
+    setVideos(dummyVideos);
+  }
+
+  // transcript must be JSON
+  const uploadToSupabase = async (url, transcript, title, thumbnail) => {
     const { data, error } = await supabase
       .from('lectures')
       .insert([
-        { url: videoUrl, transcript: 'transcript goes here', title: videoTitle }
+        { url: url, transcript: transcript, title: title, thumbnail: thumbnail }
       ]);
   };
 
@@ -36,7 +50,7 @@ const LibraryPage = () => {
     if (videoId && videoTitle) {
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
       setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
-      uploadToSupabase();
+      uploadToSupabase(videoUrl, {data: 'test'}, videoTitle, thumbnailUrl);
       setVideoUrl('');
       setVideoTitle('');
     } else {
