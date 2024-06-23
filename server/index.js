@@ -11,7 +11,11 @@ const port = 3001;
 const takeScreenshot = require('youtube-screenshot');
 const bodyParser = require('body-parser');
 
-app.use(cors());
+app.use(cors({
+    origin: `${process.env.REACT_APP_CLIENT_URL}`
+}));
+
+// Use CORS middleware with options
 app.use(bodyParser.json());
 
 const convertOffsetToTime = (offset) => {

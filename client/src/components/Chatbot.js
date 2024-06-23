@@ -90,13 +90,17 @@ const Chatbot = (props) => {
   };
 
   const handleOcr = async () => {
-    const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/take-screenshot`, { timestamp: props.currentTime, url: videoUrl });
-    const dummyMessages = [];
-    for (let i = 0; i < messages.length; i++) {
-      dummyMessages.push(messages[i]);
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/take-screenshot`, { timestamp: props.currentTime, url: videoUrl });
+      const dummyMessages = [];
+      for (let i = 0; i < messages.length; i++) {
+        dummyMessages.push(messages[i]);
+      }
+      dummyMessages.push({ sender: 'bot', text: response.data.data });
+      setMessages(dummyMessages);
+    } catch (err) {
+      console.log("BIG SERVER ERROR: ", err);
     }
-    dummyMessages.push({ sender: 'bot', text: response.data.data });
-    setMessages(dummyMessages);
   };
 
   return (
