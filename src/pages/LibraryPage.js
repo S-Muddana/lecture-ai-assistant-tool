@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import supabase from '../supabaseClient';
-import {fetchTranscript} from '../utils/Transcript';
+import { fetchTranscript } from '../utils/Transcript';
+import { uploadToS3, startIngestionJob, queryKnowledgeBase } from '../utils/uploadToS3';
 import '../index.css';
 
 const LibraryPage = () => {
@@ -11,7 +12,6 @@ const LibraryPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [transcript, setTranscript] = useState('');
 
-
   useEffect(() => {
     fetchSupabase();
   }, [videos]);
@@ -19,19 +19,20 @@ const LibraryPage = () => {
   const fetchSupabase = async () => {
     const { data, error } = await supabase.from('lectures').select('*');
     const dummyVideos = [];
-    for (let i=0; i<data.length; i++) {
-      dummyVideos.push({ videoId: extractVideoId(data[i].url), thumbnailUrl: data[i].thumbnail, title: data[i].title });
+    for (let i = 0; i < data.length; i++) {
+      dummyVideos.push({
+        videoId: extractVideoId(data[i].url),
+        thumbnailUrl: data[i].thumbnail,
+        title: data[i].title
+      });
     }
     setVideos(dummyVideos);
-  }
+  };
 
-  // transcript must be JSON
-  const uploadToSupabase = async (url, transcript, title, thumbnail) => {
+  const uploadToSupabase = async (url, s3Url, title, thumbnail) => {
     const { data, error } = await supabase
       .from('lectures')
-      .insert([
-        { url: url, transcript: transcript, title: title, thumbnail: thumbnail }
-      ]);
+      .insert([{ url: url, transcript: s3Url, title: title, thumbnail: thumbnail }]);
   };
 
   const extractVideoId = (url) => {
@@ -56,8 +57,17 @@ const LibraryPage = () => {
     console.log(curr_transcript);
     if (videoId && videoTitle) {
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-      setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
-      uploadToSupabase(videoUrl, curr_transcript, videoTitle, thumbnailUrl);
+      const s3Url = await uploadToS3(videoId, curr_transcript);
+
+      if (s3Url) {
+        setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
+        await uploadToSupabase(videoUrl, s3Url, videoTitle, thumbnailUrl);
+        const ingestionJobId = await startIngestionJob();
+        console.log(`Ingestion job started with ID: ${ingestionJobId}`);
+      } else {
+        alert('Failed to upload transcript to S3.');
+      }
+
       setVideoUrl('');
       setVideoTitle('');
     } else {
@@ -72,9 +82,11 @@ const LibraryPage = () => {
       .eq('url', url);
   }
 
-  const filteredVideos = videos.filter(video =>
-    video.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSearch = async () => {
+    const results = await queryKnowledgeBase(searchTerm);
+    console.log('Search results:', results);
+  };
+
 
   return (
     <div style={{ padding: '50px' }}>
@@ -89,6 +101,9 @@ const LibraryPage = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 opacity-70"><path fillRule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clipRule="evenodd" /></svg>
+          <button onClick={handleSearch} style={{ marginLeft: '10px' }}>
+          Search
+        </button>
         </label>
       </div>
 
@@ -99,7 +114,7 @@ const LibraryPage = () => {
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }} className='flex flex-row justify-center pt-11'>
-        {filteredVideos.map(video => (
+        {videos.map(video => (
           <div key={video.videoId} style={{ marginBottom: '20px' }}>
               <div style={{
                 overflow: 'hidden',
