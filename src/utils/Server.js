@@ -11,7 +11,15 @@ async function fetchTranscript(videoId) {
     try {
         const transcript = await YoutubeTranscript.fetchTranscript(videoId, {lang : 'en'});
         console.log('Transcript:', transcript);
-        return transcript;
+
+        const filteredTranscript = transcript.map(entry => {
+            console.log('Processing entry:', entry);
+            return { text: entry.text, offset: entry.offset };
+        });
+
+        console.log('Filtered Transcript:', filteredTranscript);
+        return filteredTranscript;
+        
     } catch (error) {
         console.error('Error fetching transcript:', error);
         return null;
