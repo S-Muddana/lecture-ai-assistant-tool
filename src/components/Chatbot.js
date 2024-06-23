@@ -92,11 +92,11 @@ const Chatbot = ({ initialResponse }) => {
     <div className="rounded-md" style={{ boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)', padding: '10px', height: '400px', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px' }}>
         {messages.map((message, index) => (
-          <div key={index} style={{ textAlign: message.sender === 'bot' ? 'left' : 'right' }}>
-            <div className="font-mono" style={{ display: 'inline-block', padding: '10px', borderRadius: '5px', margin: '5px 0', background: message.sender === 'bot' ? '#7380FF' : '#7380FF', color: message.sender === 'bot' ? '#000' : '#fff' }}>
-              {message.text}
-            </div>
+          <div key={index} className={`chat ${message.sender === 'bot' ? 'chat-start' : 'chat-end'} `}>
+          <div className={`chat-bubble ${message.sender === 'bot' ? 'chat-bubble-primary' : ''}`}>
+            {message.text}
           </div>
+        </div>
         ))}
         {loading && (
           <div style={{ textAlign: 'left' }}>
