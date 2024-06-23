@@ -90,7 +90,7 @@ const Chatbot = (props) => {
   };
 
   const handleOcr = async () => {
-    const response = await axios.post('http://localhost:3001/take-screenshot', { timestamp: props.currentTime, url: videoUrl });
+    const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/take-screenshot`, { timestamp: props.currentTime, url: videoUrl });
     const dummyMessages = [];
     for (let i = 0; i < messages.length; i++) {
       dummyMessages.push(messages[i]);
