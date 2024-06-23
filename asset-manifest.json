@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/lecture-ai-assistant-tool/static/css/main.f0b70059.css",
-    "main.js": "/lecture-ai-assistant-tool/static/js/main.cbbf752f.js",
+    "main.css": "/lecture-ai-assistant-tool/static/css/main.dd2cd865.css",
+    "main.js": "/lecture-ai-assistant-tool/static/js/main.ed0edb5e.js",
     "static/js/952.09b2559f.chunk.js": "/lecture-ai-assistant-tool/static/js/952.09b2559f.chunk.js",
     "static/js/453.6d0ff731.chunk.js": "/lecture-ai-assistant-tool/static/js/453.6d0ff731.chunk.js",
     "index.html": "/lecture-ai-assistant-tool/index.html",
-    "main.f0b70059.css.map": "/lecture-ai-assistant-tool/static/css/main.f0b70059.css.map",
-    "main.cbbf752f.js.map": "/lecture-ai-assistant-tool/static/js/main.cbbf752f.js.map",
+    "main.dd2cd865.css.map": "/lecture-ai-assistant-tool/static/css/main.dd2cd865.css.map",
+    "main.ed0edb5e.js.map": "/lecture-ai-assistant-tool/static/js/main.ed0edb5e.js.map",
     "952.09b2559f.chunk.js.map": "/lecture-ai-assistant-tool/static/js/952.09b2559f.chunk.js.map",
     "453.6d0ff731.chunk.js.map": "/lecture-ai-assistant-tool/static/js/453.6d0ff731.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.f0b70059.css",
-    "static/js/main.cbbf752f.js"
+    "static/css/main.dd2cd865.css",
+    "static/js/main.ed0edb5e.js"
   ]
 }
