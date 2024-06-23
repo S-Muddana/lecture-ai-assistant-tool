@@ -5,10 +5,17 @@ Project by Satvik Muddana, Aldrin Ong, Subham Mitra, and Andrew Falcon
 
 git clone https://github.com/S-Muddana/lecture-ai-assistant-tool/
 
+### Add your OpenAI key to the .env file in server
+### Add keys to the .env file in client
+
+#### In one terminal
+cd server
 npm install
+npm start
 
-Add your OpenAI key to the .env file
-
+#### In another terminal
+cd client
+npm install
 npm start
 
 # Getting Started with Create React App

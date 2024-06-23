@@ -240,7 +240,7 @@ const VideoPage = () => {
           </div>
         </div>
         <div style={{ flex: 1, paddingLeft: '20px' }}>
-          <Chatbot initialResponse={response}/>
+          <Chatbot currentTime={currentTime} initialResponse={response}/>
         </div>
       </div>
       {currentQuestionIndex !== -1 && (
