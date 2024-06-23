@@ -11,17 +11,22 @@ const port = 3001;
 const takeScreenshot = require('youtube-screenshot');
 const bodyParser = require('body-parser');
 
-const corsOptions = {
-    origin: 'https://athena-client-lemon.vercel.app',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type,Authorization',
-    credentials: true,
-    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-};
+app.use(bodyParser.json());
 
-app.use(cors(corsOptions));
+// Disable CORS (Allow all origins)
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Allow any origin
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', true); // Allow cookies
 
-app.options('*', cors(corsOptions)); // preflight OPTIONS; put before other routes
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 
 const convertOffsetToTime = (offset) => {
     const minutes = Math.floor(offset / 60);
