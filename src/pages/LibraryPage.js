@@ -120,29 +120,14 @@ const LibraryPage = () => {
                     className="rounded-md"
                   />
                 </Link>
-                <div className='flex flex-row justify-center'>
-                  <button onClick={() => handleDeleteVideo(`https://www.youtube.com/watch?v=${video.videoId}`)}>🗑️</button>
-                  <p className="text-lg font-semibold font-mono">{video.title}</p>
+                <div className='flex flex-row justify-between pt-1'>
+                  <p className="text-lg font-semibold font-mono pl-2">{video.title}</p>
+                  <button className="pr-2" onClick={() => handleDeleteVideo(`https://www.youtube.com/watch?v=${video.videoId}`)}>🗑️</button>
                 </div>
               </div>
           </div>
         ))}
       </div>
-      {/* <input
-        type="text"
-        placeholder="YouTube URL"
-        value={videoUrl}
-        onChange={(e) => setVideoUrl(e.target.value)}
-        style={{ marginRight: '10px' }}
-      />
-      <input
-        type="text"
-        placeholder="Video Title"
-        value={videoTitle}
-        onChange={(e) => setVideoTitle(e.target.value)}
-        style={{ marginRight: '10px', marginLeft: '10px' }}
-      />
-      <button className="btn btn-primary" onClick={handleAddVideo}>Add Video</button> */}
     </div>
   );
 };
