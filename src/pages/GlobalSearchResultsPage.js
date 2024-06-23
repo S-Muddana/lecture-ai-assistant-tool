@@ -30,7 +30,7 @@ const GlobalSearchResultsPage = () => {
 
   const cleanUpText = (text) => {
     const pattern =
-      /"time":"(\d{2}:\d{2})","videoId":"[a-zA-Z0-9_-]+?"\},{"text":"(.*?)"(?:,|$)/g;
+      /"time":"(\d{2}:\d{2})"\},{"text":"(.*?)"(?:,|$)/g;
     let match;
     const cleanedData = [];
 

@@ -92,7 +92,7 @@ const LibraryPage = () => {
         if (status === 'COMPLETE') {
           console.log('Ingestion job completed successfully.');
           setIngestionStatus('Ingestion job completed successfully.');
-          alert('Ingestion job completed successfully.');
+          // alert('Ingestion job completed successfully.');
         } else {
           console.error('Ingestion job did not complete successfully.');
           setIngestionStatus('Ingestion job failed.');
@@ -191,6 +191,28 @@ const LibraryPage = () => {
           </div>
         ))}
       </div>
+      {isIngesting && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)', // Translucent overlay
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000, // Ensure it's above other elements
+          }}
+        >
+          <div style={{ textAlign: 'center', color: '#fff' }}>
+            <span className="loading loading-spinner loading-lg" style={{ marginBottom: '20px' }}></span>
+            <h2 style={{ marginBottom: '10px' }}>Ingesting...</h2>
+            <p>Please wait while we learn your lecture.</p>
+          </div>
+        </div>
+      )}
       
       {isSearching && (
         <div
