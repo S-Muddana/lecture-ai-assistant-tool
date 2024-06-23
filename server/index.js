@@ -14,18 +14,10 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 
 // Disable CORS (Allow all origins)
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*'); // Allow any origin
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', true); // Allow cookies
-
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", REACT_APP_CLIENT_URL); // update to match the domain you will make the request from
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
-  }
 });
 
 const convertOffsetToTime = (offset) => {
@@ -88,7 +80,7 @@ async function fetchTranscriptServer(videoId) {
     }
 }
 
-app.post('/take-screenshot', async (req, res) => {
+app.post('/take-screenshot', async (req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*'); // Allow any origin
     const {timestamp} = req.body;
     const {url} = req.body;
@@ -125,7 +117,7 @@ app.post('/take-screenshot', async (req, res) => {
     // console.log("OPENAI RESPONSE", response.choices[0].message.content);
 });
 
-app.get('/transcript/:videoId', async (req, res) => {
+app.get('/transcript/:videoId', async (req, res, next) => {
     const videoId = req.params.videoId;
     const transcript = await fetchTranscriptServer(videoId);
     if (transcript) {
