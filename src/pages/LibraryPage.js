@@ -64,6 +64,7 @@ const LibraryPage = () => {
     if (videoId && videoTitle) {
       // Generate quiz questions from the transcript
       const quizQuestions = await generateQuizQuestions(curr_transcript);
+      console.log(quizQuestions);
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
       const s3Url = await uploadToS3(videoId, curr_transcript);
       if (s3Url) {
@@ -129,7 +130,7 @@ const LibraryPage = () => {
               }}>
               <Link
                   to={{
-                    pathname: `/video/${video.videoId}`,
+                    pathname: `/lecture-ai-assistant-tool/video/${video.videoId}`,
                     state: { title: video.title }
                   }}
                   style={{ textDecoration: 'none', color: 'inherit' }}
