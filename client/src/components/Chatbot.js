@@ -8,7 +8,7 @@ import axios from 'axios';
 // Configure the OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.REACT_APP_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
+  dangerouslyAllowBrowser: true,
 });
 
 const Chatbot = (props) => {

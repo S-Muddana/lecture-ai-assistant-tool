@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 // Configure the OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true,
 });
 
 export const generateQuizQuestions = async (transcript) => {
