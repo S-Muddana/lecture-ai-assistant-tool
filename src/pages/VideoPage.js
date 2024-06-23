@@ -11,38 +11,14 @@ const openai = new OpenAI({
 });
 
 const VideoPage = () => {
-  const quizData = [
-    {
-      "question": "What is the capital of France?",
-      "answers": [
-        "London",
-        "Paris",
-        "Berlin",
-        "Rome"
-      ],
-      "correct_answer": "Paris",
-      "timestamp": 30
-    },
-    {
-      "question": "Who painted the Mona Lisa?",
-      "answers": [
-        "Leonardo da Vinci",
-        "Pablo Picasso",
-        "Vincent van Gogh",
-        "Claude Monet"
-      ],
-      "correct_answer": "Leonardo da Vinci",
-      "timestamp": 60
-    },
-    // Add more questions as needed
-  ];
   const { id } = useParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [currentTime, setCurrentTime] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [player, setPlayer] = useState(null); // State to hold the player instance
+  const [player, setPlayer] = useState(null);
+  const [quizData, setQuizData] = useState([]);
   const [resources, setResources] = useState('');
 
   const handleSearch = (e) => {
@@ -50,6 +26,28 @@ const VideoPage = () => {
     console.log(`Searching for: ${searchQuery}`);
     // Handle search logic here
   };
+
+  useEffect(() => {
+    const fetchQuizData = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('lectures')
+            .select('questions')
+            .eq('url', `https://www.youtube.com/watch?v=${id}`)
+            .single();
+
+          if (error) {
+            throw new Error(error.message);
+          }
+          console.log(data.questions.questions);
+          setQuizData(data.questions.questions || []);
+        } catch (error) {
+            console.error('Error fetching quiz data:', error);
+        }
+    };
+  
+    fetchQuizData();
+  }, [id]);
 
   useEffect(() => {
     const fetchResources = async () => {
@@ -101,6 +99,7 @@ const VideoPage = () => {
             if (time !== lastTimeUpdate) {
               lastTimeUpdate = time;
               setCurrentTime(time); // Update state with the current time
+              console.log(quizData);
               const questionIndex = quizData.findIndex(item => item.timestamp === time);
               if (questionIndex !== -1 && questionIndex !== currentQuestionIndex) {
                 player.pauseVideo();
@@ -135,7 +134,7 @@ const VideoPage = () => {
       window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
     }
 
-  }, [id]);
+  }, [id, quizData, currentQuestionIndex]);
 
   const handleAnswerSelect = (answer) => {
     setSelectedAnswer(answer);

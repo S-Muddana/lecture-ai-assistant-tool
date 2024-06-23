@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import supabase from '../supabaseClient';
 import { fetchTranscript } from '../utils/Transcript';
+import { generateQuizQuestions } from '../utils/QuizGenerator';
 import { uploadToS3, startIngestionJob, queryKnowledgeBase } from '../utils/uploadToS3';
 import '../index.css';
 
@@ -29,10 +30,16 @@ const LibraryPage = () => {
     setVideos(dummyVideos);
   };
 
-  const uploadToSupabase = async (url, transcript, title, thumbnail) => {
+  const uploadToSupabase = async (url, transcript, title, thumbnail, questions) => {
     const { data, error } = await supabase
       .from('lectures')
-      .insert([{ url: url, transcript: transcript, title: title, thumbnail: thumbnail }]);
+      .insert([
+        { url: url, transcript: transcript, title: title, thumbnail: thumbnail, questions: questions }
+      ]);
+
+    if (error) {
+      console.error('Error uploading to Supabase:', error);
+    }
   };
 
   const extractVideoId = (url) => {
@@ -55,11 +62,13 @@ const LibraryPage = () => {
     const curr_transcript = await fetchTranscript(videoId);
     console.log(curr_transcript);
     if (videoId && videoTitle) {
+      // Generate quiz questions from the transcript
+      const quizQuestions = await generateQuizQuestions(curr_transcript);
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
       const s3Url = await uploadToS3(videoId, curr_transcript);
       if (s3Url) {
         setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
-        await uploadToSupabase(videoUrl, curr_transcript, videoTitle, thumbnailUrl);
+        await uploadToSupabase(videoUrl, curr_transcript, videoTitle, thumbnailUrl, quizQuestions);
         const ingestionJobId = await startIngestionJob();
         console.log(`Ingestion job started with ID: ${ingestionJobId}`);
       } else {
