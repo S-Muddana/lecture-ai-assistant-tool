@@ -11,14 +11,17 @@ const port = 3001;
 const takeScreenshot = require('youtube-screenshot');
 const bodyParser = require('body-parser');
 
-app.use(cors({
-    origin: `${process.env.REACT_APP_CLIENT_URL}`,
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+const corsOptions = {
+    origin: 'https://athena-client-lemon.vercel.app',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type,Authorization',
+    credentials: true,
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
 
-// Use CORS middleware with options
-app.use(bodyParser.json());
+app.use(cors(corsOptions));
+
+app.options('*', cors(corsOptions)); // preflight OPTIONS; put before other routes
 
 const convertOffsetToTime = (offset) => {
     const minutes = Math.floor(offset / 60);
