@@ -39,7 +39,8 @@ const Chatbot = () => {
       .eq('url', videoUrl);
 
     const initialPrompt = 'The following is a transcript of a YouTube Video. From now on, I will ask you questions regarding information that may be in this video. Please refer to this transcript as necessary in order to answer my questions accurately.';
-    conversationHistory.current.push({"role": "user", "content": initialPrompt + '\n' + data[0].transcript});
+    conversationHistory.current.push({"role": "user", "content": initialPrompt + '\n' + JSON.stringify(data[0].transcript)});
+    console.log(conversationHistory.current);
   }
 
   const handleSend = async (e) => {
