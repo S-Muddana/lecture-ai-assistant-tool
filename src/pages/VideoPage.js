@@ -108,7 +108,7 @@ const VideoPage = () => {
       window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
     }
 
-  }, [id, quizData]);
+  }, [id, quizData, currentQuestionIndex]);
 
   const handleAnswerSelect = (answer) => {
     setSelectedAnswer(answer);
