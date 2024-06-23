@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import OpenAI from 'openai';
 import supabase from '../supabaseClient';
 import { useParams } from 'react-router-dom';
+import SpeechRecognitionComponent from '../utils/SpeechRecog';
 
 // Configure the OpenAI client
 const openai = new OpenAI({
@@ -15,6 +16,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([{ sender: 'bot', text: 'Hi! How can I help you today?' }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [interimInput, setInterimInput] = useState('');
   const messagesEndRef = useRef(null);
 
   const [prompt, setPrompt] = useState('');
@@ -76,6 +78,15 @@ const Chatbot = () => {
     }
   };
 
+  const handleVoiceInput = (interimText) => {
+    setInterimInput(interimText);
+  };
+
+  const handleFinalVoiceInput = (finalText) => {
+    setInput((prev) => prev + finalText);
+    setInterimInput('');
+  };
+
   return (
     <div style={{ border: '1px solid #ccc', borderRadius: '5px', padding: '10px', height: '400px', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px' }}>
@@ -103,6 +114,7 @@ const Chatbot = () => {
           placeholder="Type a message..."
           style={{ flex: 1, padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
         />
+        <SpeechRecognitionComponent onTextChange={handleVoiceInput} onFinalText={handleFinalVoiceInput}/>
         <button type="submit" style={{ padding: '10px', borderRadius: '5px', border: 'none', background: '#007bff', color: '#fff', marginLeft: '5px' }}>
           Send
         </button>
