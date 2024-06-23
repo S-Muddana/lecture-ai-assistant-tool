@@ -1,5 +1,5 @@
 # lecture-ai-assistant-tool
-UC Berkeley AI Hackathon Project by Satvik Muddana, Aldrin Ong, Subham Mitra, and Andrew Falcon
+Project by Satvik Muddana, Aldrin Ong, Subham Mitra, and Andrew Falcon
 
 # How to run the app
 
