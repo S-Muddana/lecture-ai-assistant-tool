@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import supabase from '../supabaseClient';
-import {fetchTranscript} from '../utils/Transcript';
+import { fetchTranscript } from '../utils/Transcript';
+import { generateQuizQuestions } from '../utils/QuizGenerator';
 
 const LibraryPage = () => {
   const [videos, setVideos] = useState([]);
@@ -10,7 +11,6 @@ const LibraryPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [transcript, setTranscript] = useState('');
 
-
   useEffect(() => {
     fetchSupabase();
   }, []);
@@ -18,19 +18,22 @@ const LibraryPage = () => {
   const fetchSupabase = async () => {
     const { data, error } = await supabase.from('lectures').select('*');
     const dummyVideos = [];
-    for (let i=0; i<data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       dummyVideos.push({ videoId: extractVideoId(data[i].url), thumbnailUrl: data[i].thumbnail, title: data[i].title });
     }
     setVideos(dummyVideos);
   }
 
-  // transcript must be JSON
-  const uploadToSupabase = async (url, transcript, title, thumbnail) => {
+  const uploadToSupabase = async (url, transcript, title, thumbnail, questions) => {
     const { data, error } = await supabase
       .from('lectures')
       .insert([
-        { url: url, transcript: transcript, title: title, thumbnail: thumbnail }
+        { url: url, transcript: transcript, title: title, thumbnail: thumbnail, questions: questions }
       ]);
+
+    if (error) {
+      console.error('Error uploading to Supabase:', error);
+    }
   };
 
   const extractVideoId = (url) => {
@@ -52,11 +55,15 @@ const LibraryPage = () => {
     const videoId = extractVideoId(videoUrl);
     const curr_transcript = await fetchTranscript(videoId);
     setTranscript(curr_transcript);
-    console.log(curr_transcript);
+
     if (videoId && videoTitle) {
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
+      // Generate quiz questions from the transcript
+      const quizQuestions = await generateQuizQuestions(curr_transcript);
+
       setVideos([...videos, { videoId, thumbnailUrl, title: videoTitle }]);
-      uploadToSupabase(videoUrl, curr_transcript, videoTitle, thumbnailUrl);
+      uploadToSupabase(videoUrl, curr_transcript, videoTitle, thumbnailUrl, quizQuestions);
       setVideoUrl('');
       setVideoTitle('');
     } else {
